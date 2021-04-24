@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.bytedance.raphael.demo">
 
@@ -14,10 +13,11 @@
 
     <application
         android:name="com.bytedance.demo.DemoApp"
-        android:label="Raphael"
+        android:allowBackup="true"
         android:icon="@drawable/icon"
+        android:label="Raphael"
         android:supportsRtl="true"
-        android:allowBackup="true">
+        android:usesCleartextTraffic="true">
 
         <activity
             android:name="com.bytedance.demo.MainActivity"

@@ -101,7 +101,7 @@ static void *malloc_proxy(size_t size) {
 
 void test4(int debug){
     if(debug){
-        void* p = malloc(111111);
+        void* p = malloc_proxy(111111);
 //        LOGGER("test4:p=%p,limit=%d",p,limit);
         //    debug_free(p);
 //        if(!pthread_getspecific(guard)){

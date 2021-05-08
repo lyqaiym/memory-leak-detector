@@ -16,8 +16,9 @@
 
 package com.bytedance.raphael;
 
-import android.support.annotation.Keep;
 import android.util.Log;
+
+import androidx.annotation.Keep;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -62,4 +63,6 @@ public class Raphael {
     private static native void nStop();
 
     private static native void nPrint();
+
+    public static native void testMallocRaphael();
 }

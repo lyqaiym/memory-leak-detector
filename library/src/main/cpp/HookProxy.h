@@ -99,6 +99,43 @@ static void *malloc_proxy(size_t size) {
     }
 }
 
+void test4(int debug){
+    if(debug){
+        void* p = malloc(111111);
+//        LOGGER("test4:p=%p,limit=%d",p,limit);
+        //    debug_free(p);
+//        if(!pthread_getspecific(guard)){
+//            pthread_setspecific(guard, (void *) 1);
+//            void *address = malloc(11);
+//            if (address != NULL) {
+//                insert_memory_backtrace(address, 11);
+//            }
+//            pthread_setspecific(guard, (void *) 0);
+//        }
+    }else{
+        void* p = malloc(11);
+        free(p);
+    }
+}
+
+void test3(int debug){
+    test4(debug);
+}
+
+void test2(int debug){
+    test3(debug);
+}
+
+void test1(int debug){
+    test2(debug);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bytedance_raphael_Raphael_testMallocRaphael(JNIEnv *env, jclass clazz) {
+    test1(1);
+}
+
 static void *calloc_proxy(size_t count, size_t bytes) {
     uint size = count * bytes;
     if (isPss && size >= limit && !(uintptr_t) pthread_getspecific(guard)) {

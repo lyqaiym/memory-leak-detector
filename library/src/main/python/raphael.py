@@ -20,8 +20,8 @@ import re
 import os
 
 import argparse
-import commands
-
+import subprocess
+from functools import cmp_to_key
 
 # addr2line environment
 __ARMEABI_ADDR2LINE_FORMAT__ = "arm-linux-androideabi-addr2line -e %s -f %s"
@@ -83,12 +83,12 @@ class Trace:
 
 
 def addr_to_line(address, symbol_path):
-    status, output = commands.getstatusoutput('arm-linux-androideabi-addr2line -e %s -f %s' % (symbol_path, address))
+    status, output = subprocess.getstatusoutput('arm-linux-androideabi-addr2line -e %s -f %s' % (symbol_path, address))
     if status != 0:
         raise Exception('execute [arm-linux-androideabi-addr2line -e %s -f %s] failed' % (symbol_path, address))
     splits = output.split('\n')
 
-    status, output = commands.getstatusoutput('c++filt -n %s' % (splits[0]))
+    status, output = subprocess.getstatusoutput('c++filt -n %s' % (splits[0]))
     if status != 0:
         raise Exception('execute [filt -n %s] failed' % (splits[0]))
     return output
@@ -126,16 +126,24 @@ def group_record(record):
     return default if default else 'extras'
 
 
+def compare_trace(x: Trace, y: Trace):
+    # 返回正数则 b 排前面，实现降序
+    return x.size - y.size
+
+def compare_trace2(x: Trace, y: Trace):
+    # 返回正数则 b 排前面，实现降序
+    return x - y
+
 def print_report(writer, report):
     groups = {}
     totals = 0
     for record in report:
         name = group_record(record)
         size = record.size
-        groups.update({name: size + (int(groups.get(name)) if groups.has_key(name) else 0)})
+        groups.update({name: size + (int(groups.get(name)) if name in groups else 0)})
         totals += size
-    groups = sorted(groups.items(), lambda x, y: cmp(x[1], y[1]), reverse=True)
-
+#     groups = sorted(groups.items(), lambda x, y: cmp(x[1], y[1]), reverse=True)
+    groups = sorted(groups.items(), key=lambda t: t[1], reverse=True)
     writer.write('%s\t%s\n' % (format(totals, ',').rjust(13, ' '), 'totals'))
     extras = -1
     for i in range(0, len(groups)):
@@ -146,7 +154,9 @@ def print_report(writer, report):
     if extras != -1:
         writer.write('%s\t%s\n' % (format(groups[extras][1], ',').rjust(13, ' '), groups[extras][0]))
 
-    report.sort(lambda x, y: x.size - y.size, reverse=True)
+#     report.sort(lambda x, y: x.size - y.size, reverse=True)
+
+    report.sort(key=cmp_to_key(compare_trace))
     for record in report:
         retry_symbol(record)
 
@@ -157,8 +167,8 @@ def print_report(writer, report):
 
 def merge_report(report):
     merged = []
-    report.sort(lambda x, y: x - y, reverse=True)
-
+#     report.sort(lambda x, y: x - y, reverse=True)
+    report.sort(key=cmp_to_key(compare_trace2))
     record = report[0]
     for i in range(1, len(report)):
         if record == report[i]:

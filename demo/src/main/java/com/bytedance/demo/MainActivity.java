@@ -18,5 +18,11 @@ public class MainActivity extends AppCompatActivity {
                 Raphael.print();
             }
         });
+        findViewById(R.id.btn_malloc).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Malloc.testMalloc();
+            }
+        });
     }
 }

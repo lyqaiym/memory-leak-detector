@@ -14,4 +14,10 @@
         android:textSize="21sp"
         android:textColor="@android:color/white"
         android:background="@drawable/btn_background" />
+    <Button
+        android:id="@+id/btn_malloc"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_centerHorizontal="true"
+        android:text="分配内存" />
 </merge>

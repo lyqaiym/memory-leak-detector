@@ -1,0 +1,2 @@
+adb pull /storage/emulated/0/Android/data/com.bytedance.raphael.demo/cache/raphael
+python library/src/main/python/raphael.py -r raphael/report -o leak-doubts.txt -s ./symbol/

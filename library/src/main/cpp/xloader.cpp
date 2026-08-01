@@ -19,8 +19,9 @@
 
 #include "Logger.h"
 #include "Raphael.h"
+
 //**************************************************************************************************
-Raphael* sRaphael = new Raphael();
+Raphael *sRaphael = new Raphael();
 
 void start(JNIEnv *env, jobject obj, jint configs, jstring space, jstring regex) {
     sRaphael->start(env, obj, configs, space, regex);
@@ -33,6 +34,25 @@ void stop(JNIEnv *env, jobject obj) {
 void print(JNIEnv *env, jobject obj) {
     sRaphael->print(env, obj);
 }
+
+//extern "C"
+//JNIEXPORT void JNICALL
+//Java_com_bytedance_raphael_Raphael_nStart(JNIEnv *env, jclass clazz, jint configs, jstring space, jstring regex) {
+//    // TODO: implement nStart()
+//    start(env, clazz, configs, space, regex);
+//}
+//extern "C"
+//JNIEXPORT void JNICALL
+//Java_com_bytedance_raphael_Raphael_nStop(JNIEnv *env, jclass clazz) {
+//    // TODO: implement nStop()
+//    stop(env, clazz);
+//}
+//extern "C"
+//JNIEXPORT void JNICALL
+//Java_com_bytedance_raphael_Raphael_nPrint(JNIEnv *env, jclass clazz) {
+//    // TODO: implement nPrint()
+//    print(env, clazz);
+//}
 
 static const JNINativeMethod sMethods[] = {
         {

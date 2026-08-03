@@ -2,11 +2,12 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 
 android {
-    compileSdkVersion 29
+    compileSdk = rootProject.ext.compileSdkVersion
+    namespace = 'com.bytedance.raphael.library'
+    ndkVersion = rootProject.ext.ndkVersion
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 29
+        minSdkVersion rootProject.ext.minSdkVersion
 
         externalNativeBuild {
             cmake {
@@ -24,18 +25,24 @@ android {
         }
     }
 
-    ndkVersion "21.4.7075529"
-
     externalNativeBuild {
         cmake {
             path 'CMakeLists.txt'
+            version = rootProject.ext.cmakeVersion
+        }
+    }
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+            withJavadocJar()
         }
     }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:support-annotations:28.0.0'
+//    implementation 'com.android.support:support-annotations:28.0.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
 }
 
 afterEvaluate {

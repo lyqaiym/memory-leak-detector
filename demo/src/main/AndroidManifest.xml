@@ -15,6 +15,7 @@
 
         <activity
             android:name="com.bytedance.demo.MainActivity"
+            android:exported="true"
             android:theme="@style/MainTheme">
 
             <intent-filter>

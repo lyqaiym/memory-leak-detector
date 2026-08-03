@@ -12,7 +12,8 @@ public class DemoApp extends Application {
     public void onCreate() {
         super.onCreate();
         String space = new File(getExternalCacheDir(), "raphael").getAbsolutePath();
-        Raphael.start(Raphael.MAP64_MODE | Raphael.ALLOC_MODE | 0x0F0000 | 1024, space, null);
+//        Raphael.start(Raphael.MAP64_MODE | Raphael.ALLOC_MODE | 0x0F0000 | 1024, space, null);
+      Raphael.start(Raphael.MAP64_MODE|Raphael.ALLOC_MODE|0x0F0000|1024, space, ".*libdemo\\.so$");
 //      Raphael.start(Raphael.MAP64_MODE|Raphael.ALLOC_MODE|0x0F0000|1024, space, ".*libhwui\\.so$");
     }
 }

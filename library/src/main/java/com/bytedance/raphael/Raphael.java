@@ -16,7 +16,7 @@
 
 package com.bytedance.raphael;
 
-import android.support.annotation.Keep;
+import androidx.annotation.Keep;
 import android.util.Log;
 
 import java.util.concurrent.atomic.AtomicBoolean;

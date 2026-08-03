@@ -32,15 +32,18 @@
 #include "inlineHook.h"
 #include "backtrace.h"
 #else
+
 #include "And64InlineHook.hpp"
 #include "backtrace_64.h"
+
 #endif
 
 #include "Logger.h"
 #include "Raphael.h"
+
 //**************************************************************************************************
-static Cache            *cache = nullptr;
-static pthread_key_t     guard;
+static Cache *cache = nullptr;
+static pthread_key_t guard;
 static volatile uint32_t limit;
 static volatile uint32_t depth;
 static volatile uint32_t isPss;
@@ -53,6 +56,7 @@ void update_configs(Cache *pNew, uint32_t params) {
     isPss = (params & ALLOC_MODE) != 0;
     isVss = (params & MAP64_MODE) != 0;
 }
+
 //**************************************************************************************************
 static inline void insert_memory_backtrace(void *address, size_t size) {
     Backtrace backtrace;
@@ -66,24 +70,26 @@ static inline void insert_memory_backtrace(void *address, size_t size) {
 
     cache->insert((uintptr_t) address, size, &backtrace);
 }
+
 //**************************************************************************************************
 static void *(*malloc_origin)(size_t) = malloc;
 
 static void *(*calloc_origin)(size_t, size_t) = calloc;
 
-static void *(*realloc_origin)(void*, size_t) = realloc;
+static void *(*realloc_origin)(void *, size_t) = realloc;
 
 static void *(*memalign_origin)(size_t, size_t) = memalign;
 
-static void  (*free_origin)(void*) = free;
+static void (*free_origin)(void *) = free;
 
-static void *(*mmap_origin)(void*, size_t, int, int, int, off_t) = mmap;
+static void *(*mmap_origin)(void *, size_t, int, int, int, off_t) = mmap;
 
-static void *(*mmap64_origin)(void*, size_t, int, int, int, off64_t) = mmap64;
+static void *(*mmap64_origin)(void *, size_t, int, int, int, off64_t) = mmap64;
 
-static  int  (*munmap_origin)(void*, size_t) = munmap;
+static int (*munmap_origin)(void *, size_t) = munmap;
 
-static void  (*pthread_exit_origin)(void *) = pthread_exit;
+static void (*pthread_exit_origin)(void *) = pthread_exit;
+
 //**************************************************************************************************
 static void *malloc_proxy(size_t size) {
     if (isPss && size >= limit && !(uintptr_t) pthread_getspecific(guard)) {
@@ -115,13 +121,14 @@ static void *calloc_proxy(size_t count, size_t bytes) {
 }
 
 static void *realloc_proxy(void *ptr, size_t size) {
-    if (isPss && size >= limit && !(uintptr_t) pthread_getspecific(guard)) {
+    if (isPss && !(uintptr_t) pthread_getspecific(guard)) {
         pthread_setspecific(guard, (void *) 1);
         void *address = realloc_origin(ptr, size);
-        if (address != NULL || size == 0) {
+        if (ptr != NULL && (size == 0 || address != NULL)) {
             cache->remove((uintptr_t) ptr);
         }
-        if (address != NULL) {
+
+        if (address != NULL && size >= limit) {
             insert_memory_backtrace(address, size);
         }
         pthread_setspecific(guard, (void *) 0);
@@ -208,6 +215,7 @@ static void pthread_exit_proxy(void *value) {
     }
     pthread_exit_origin(value);
 }
+
 //**************************************************************************************************
 static const void *sInline[][4] = {
         {
@@ -215,42 +223,50 @@ static const void *sInline[][4] = {
                 (void *) malloc,
                 (void *) malloc_proxy,
                 (void *) &malloc_origin
-        }, {
+        },
+        {
                 "calloc",
                 (void *) calloc,
                 (void *) calloc_proxy,
                 (void *) &calloc_origin
-        }, {
+        },
+        {
                 "realloc",
                 (void *) realloc,
                 (void *) realloc_proxy,
                 (void *) &realloc_origin
-        }, {
+        },
+        {
                 "memalign",
                 (void *) memalign,
                 (void *) memalign_proxy,
                 (void *) &memalign_origin
-        }, {
+        },
+        {
                 "free",
                 (void *) free,
                 (void *) free_proxy,
                 (void *) &free_origin
-        }, {
+        },
+        {
                 "mmap",
                 (void *) mmap,
                 (void *) mmap_proxy,
                 (void *) &mmap_origin
-        }, {
+        },
+        {
                 "mmap64",
                 (void *) mmap64,
                 (void *) mmap64_proxy,
                 (void *) &mmap64_origin
-        }, {
+        },
+        {
                 "munmap",
                 (void *) munmap,
                 (void *) munmap_proxy,
                 (void *) &munmap_origin
-        }, {
+        },
+        {
                 "pthread_exit",
                 (void *) pthread_exit,
                 (void *) pthread_exit_proxy,
@@ -262,46 +278,71 @@ static const void *sPltGot[][2] = {
         {
                 "malloc",
                 (void *) malloc_proxy
-        }, {
+        },
+        {
                 "calloc",
                 (void *) calloc_proxy
-        }, {
+        },
+        {
                 "realloc",
                 (void *) realloc_proxy
-        }, {
+        },
+        {
                 "memalign",
                 (void *) memalign_proxy
-        }, {
+        },
+        {
                 "free",
                 (void *) free_proxy
-        }, {
+        },
+        {
                 "mmap",
                 (void *) mmap_proxy
-        }, {
+        },
+        {
                 "mmap64",
                 (void *) mmap64_proxy
-        }, {
+        },
+        {
                 "munmap",
                 (void *) munmap_proxy
-        }, {
+        },
+        {
                 "pthread_exit",
                 (void *) pthread_exit_proxy
         }
 };
 
 static void invoke_je_free() {
-    void *handle = xdl_open("/apex/com.android.runtime/lib/bionic/libc.so");
+    int api_level = android_get_device_api_level();
+    if (api_level < __ANDROID_API_O__) {
+        return;
+    }
+    void *handle;
+    if (api_level < __ANDROID_API_Q__) {
+#if defined(__LP64__)
+        handle = xdl_open("/system/lib64/libc.so");
+#else
+        handle = xdl_open("/system/lib/libc.so");
+#endif
+    } else {
+#if defined(__LP64__)
+        handle = xdl_open("/apex/com.android.runtime/lib64/bionic/libc.so");
+#else
+        handle = xdl_open("/apex/com.android.runtime/lib/bionic/libc.so");
+#endif
+    }
     if (handle == nullptr) {
         LOGGER("invoke failed at xdl_open");
         return;
     }
-
     void *target = xdl_sym(handle, "je_free");
     if (target == nullptr) {
         LOGGER("invoke failed at xdl_sym");
     } else {
         sInline[4][1] = target;
     }
+    xdl_close(handle);
 }
 
 //**************************************************************************************************
@@ -309,7 +350,8 @@ void registerPltGotProxy(JNIEnv *env, jstring regex) {
     const char *focused = (char *) env->GetStringUTFChars(regex, 0);
     const int PROXY_MAPPING_LENGTH = sizeof(sPltGot) / sizeof(sPltGot[0]);
     for (int i = 0; i < PROXY_MAPPING_LENGTH; i++) {
-        if (0 != xh_core_register(focused, (const char *) sPltGot[i][0], (void *) sPltGot[i][1], NULL)) {
+        if (0 !=
+            xh_core_register(focused, (const char *) sPltGot[i][0], (void *) sPltGot[i][1], NULL)) {
             LOGGER("register focused failed: %s, %s", focused, (const char *) sPltGot[i][0]);
         }
     }
@@ -328,10 +370,7 @@ void registerPltGotProxy(JNIEnv *env, jstring regex) {
 }
 
 void registerInlineProxy(JNIEnv *env) {
-    int api_level = android_get_device_api_level();
-    if (api_level >= __ANDROID_API_O__) {
-        invoke_je_free();
-    }
+    invoke_je_free();
 
     const int PROXY_MAPPING_LENGTH = sizeof(sInline) / sizeof(sInline[0]);
 #ifdef __arm__
@@ -342,6 +381,7 @@ void registerInlineProxy(JNIEnv *env) {
     }
     inlineHookAll();
 #else
+    init_arm64_unwind();
     for (int i = 0; i < PROXY_MAPPING_LENGTH; i++) {
         A64HookFunction((void *) sInline[i][1], (void *) sInline[i][2], (void **) sInline[i][3]);
     }

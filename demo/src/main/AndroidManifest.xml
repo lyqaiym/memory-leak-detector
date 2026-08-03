@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.bytedance.raphael.demo">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -7,11 +8,10 @@
 
     <application
         android:name="com.bytedance.demo.DemoApp"
-        android:allowBackup="true"
-        android:extractNativeLibs="true"
-        android:icon="@drawable/icon"
         android:label="Raphael"
-        android:supportsRtl="true">
+        android:icon="@drawable/icon"
+        android:supportsRtl="true"
+        android:allowBackup="true">
 
         <activity
             android:name="com.bytedance.demo.MainActivity"

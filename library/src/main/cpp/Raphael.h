@@ -22,7 +22,6 @@
 
 #define MAP64_MODE 0x00800000
 #define ALLOC_MODE 0x00400000
-#define CACHE_MASK 0x00200000
 #define DEPTH_MASK 0x001F0000
 #define LIMIT_MASK 0x0000FFFF
 
@@ -35,8 +34,8 @@ private:
     void clean_cache(JNIEnv *env);
     void dump_system(JNIEnv *env);
 private:
-    Cache      *mCache;
-    const char *mSpace;
+    char  *mSpace;
+    Cache *mCache;
 };
 
 #endif //RAPHAEL_H

@@ -20,14 +20,22 @@
 #include "Raphael.h"
 #include "HookProxy.h"
 #include "MemoryCache.h"
+#include "PltGotHookProxy.h"
+
 //**************************************************************************************************
 void Raphael::start(JNIEnv *env, jobject obj, jint configs, jstring space, jstring regex) {
-    mSpace = (char *) env->GetStringUTFChars(space, 0);
+    const char *string = (char *) env->GetStringUTFChars(space, 0);
+    size_t length = strlen(string);
+    mSpace = (char *) malloc(length+1);
+    memset((void *)mSpace, 0, length+1);
+    memcpy((void *) mSpace, string, length);
+    env->ReleaseStringUTFChars(space, string);
+
     mCache = new MemoryCache(mSpace);
     update_configs(mCache, 0);
 
     if (regex != nullptr) {
-        registerPltGotProxy(env, regex);
+        registerSoLoadProxy(env, regex);
     } else {
         registerInlineProxy(env);
     }
@@ -48,6 +56,9 @@ void Raphael::stop(JNIEnv *env, jobject obj) {
     xh_core_clear();
     pthread_key_delete(guard);
     LOGGER("stop >>> %s", mSpace);
+
+    delete mSpace;
+    mSpace = nullptr;
 }
 
 void Raphael::print(JNIEnv *env, jobject obj) {

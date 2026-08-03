@@ -14,20 +14,27 @@
  * limitations under the License.
  */
 
-#ifndef MEMORF_CACHE_H
-#define MEMORF_CACHE_H
+#ifndef DIFF_CACHE_H
+#define DIFF_CACHE_H
 
 #include "Cache.h"
 #include "AllocPool.hpp"
 
-using namespace std;
-
-struct AllocNode {
-    uint32_t         size;
-    uintptr_t        addr;
-    uintptr_t        trace[MAX_TRACE_DEPTH];
-    AllocNode       *next;
-};
+#if defined(__LP64__)
+#define STACK_FORMAT_HEADER "\n0x%016lx, %u, 1\n"
+#define STACK_FORMAT_UNKNOWN "0x%016lx <unknown>\n"
+#define STACK_FORMAT_ANONYMOUS "0x%016lx <anonymous:%016lx>\n"
+#define STACK_FORMAT_FILE "0x%016lx %s (unknown)\n"
+#define STACK_FORMAT_FILE_NAME "0x%016lx %s (%s + \?)\n"
+#define STACK_FORMAT_FILE_NAME_LINE "0x%016lx %s (%s + %lu)\n"
+#else
+#define STACK_FORMAT_HEADER "\n0x%08x, %u, 1\n"
+#define STACK_FORMAT_UNKNOWN "0x%08x <unknown>\n"
+#define STACK_FORMAT_ANONYMOUS "0x%08x <anonymous:%08x>\n"
+#define STACK_FORMAT_FILE "0x%08x %s (unknown)\n"
+#define STACK_FORMAT_FILE_NAME "0x%08x %s (%s + \?)\n"
+#define STACK_FORMAT_FILE_NAME_LINE "0x%08x %s (%s + %u)\n"
+#endif
 
 class MemoryCache : public Cache {
 public:
@@ -39,9 +46,9 @@ public:
     void remove(uintptr_t address);
     void print();
 private:
-    pthread_mutex_t       alloc_mutex;
-    AllocNode            *alloc_table[ALLOC_INDEX_SIZE];
-    AllocPool<AllocNode> *alloc_cache;
+    pthread_mutex_t alloc_mutex;
+    AllocNode *alloc_table[ALLOC_INDEX_SIZE];
+    AllocPool *alloc_cache;
 };
 
-#endif //MEMORF_CACHE_H
+#endif //DIFF_CACHE_H

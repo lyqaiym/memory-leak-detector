@@ -28,7 +28,7 @@ allprojects {
 Step 2: Add the dependency
 ```gradle
 dependencies {
-    implementation 'com.github.bytedance:memory-leak-detector:0.0.8'
+    implementation 'com.github.bytedance:memory-leak-detector:0.2.1'
 }
 ```
 
@@ -78,13 +78,13 @@ Step 5: Analysis
 ##   -r: report path
 ##   -o: output file name
 ##   -s: symbol file dir
-python library/src/main/python/raphael.py -r report -o leak-doubts.txt -s ./symbol/
+python3 library/src/main/python/raphael.py -r report -o leak-doubts.txt -s ./symbol/
 ```
 
 ```shell
 ## analysis maps
 ##   -m: maps file path
-python library/src/main/python/mmap.py -m maps
+python3 library/src/main/python/mmap.py -m maps
 ```
 
 Step 6: Stop monitoring
@@ -109,7 +109,8 @@ adb shell am broadcast -a com.bytedance.raphael.ACTION_STOP -f 0x01000000
 1. Communicate on [GitHub issues](https://github.com/bytedance/memory-leak-detector/issues)
 2. Mail: <a href="mailto:shentianzhou.stz@gmail.com">shentianzhou.stz@gmail.com</a>
 3. WeChat: 429013449
-<p align="left"><img src="docs/wechat.jpg" alt="Wechat group" width="320px"></p>
+4. QQ Group
+<p align="left"><img src="docs/qqgroup.jpg" alt="QQ Group" width="320px"></p>
 
 ## License
 ~~~

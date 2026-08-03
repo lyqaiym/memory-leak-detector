@@ -1,17 +1,32 @@
-#!/usr/bin/python
+#
+# Copyright (C) 2021 ByteDance Inc
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+#!/usr/bin/python3
 
 import re
 import os
 import sys
 import time
 import argparse
-import commands
 
 __PATTERN__ = re.compile(r'(\S+)-(\S+) \S+ \S+ \S+ (\d+)\s*(.*)$')
 
 
 def analyse(name):
-    reader = open(name, 'r')
+    reader = open(name, 'r', encoding = 'utf-8')
     totals = 0
     detail = {}
     for line in reader.readlines():
@@ -50,8 +65,6 @@ def analyse(name):
             key = 'dmabuf'
         elif m.group(4) == '/dev/mali0':
             key = 'mali0'
-        elif m.group(4).startswith('/data/data/com.ss.android.ugc.aweme'):
-            key = 'files'
         elif ('/oat/arm/base.odex' in m.group(4)) | ('/oat/arm/base.vdex' in m.group(4)):
             key = 'dex'
         elif m.group(4).endswith('.otf'):
@@ -72,13 +85,13 @@ def analyse(name):
             key = 'atexit'
         else:
             key = 'extras'
-        length = long(m.group(2), 16) - long(m.group(1), 16)
+        length = int(m.group(2), 16) - int(m.group(1), 16)
         totals += length
         length += (detail.get(key) if key in detail.keys() else 0)
         detail.update({key: length})
     print('========== %s ==========' % os.path.basename(name))
     print('%s\t%s' % (format(totals, ',').rjust(13, ' '), 'totals'))
-    detail = sorted(detail.items(), lambda x, y: cmp(x[1], y[1]), reverse=True)
+    detail = sorted(detail.items(), key=lambda x: x[1], reverse=True)
     extras = -1
     for i in range(0, len(detail)):
         if detail[i][0] != 'extras':
@@ -98,5 +111,5 @@ if __name__ == '__main__':
     try:
         analyse(argParams.maps)
     except Exception as e:
-        print e
+        print(e)
 

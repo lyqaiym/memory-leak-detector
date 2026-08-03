@@ -5,11 +5,6 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
-set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g -O0")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")
-set(CMAKE_STRIP "")
-
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.
@@ -23,13 +18,13 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Werror=return-type -Wl,--has
 
 # Header file directories
 include_directories(
-        ${CMAKE_SOURCE_DIR}/inline32
-        ${CMAKE_SOURCE_DIR}/inline64
-        ${CMAKE_SOURCE_DIR}/xDL
-        ${CMAKE_SOURCE_DIR}/xHook
-        ${CMAKE_SOURCE_DIR}/cpp
-        ${CMAKE_SOURCE_DIR}/unwind32
-        ${CMAKE_SOURCE_DIR}/unwind64
+        ${CMAKE_SOURCE_DIR}/src/main/inline32
+        ${CMAKE_SOURCE_DIR}/src/main/inline64
+        ${CMAKE_SOURCE_DIR}/src/main/xDL
+        ${CMAKE_SOURCE_DIR}/src/main/xHook
+        ${CMAKE_SOURCE_DIR}/src/main/cpp
+        ${CMAKE_SOURCE_DIR}/src/main/unwind32
+        ${CMAKE_SOURCE_DIR}/src/main/unwind64
 )
 
 if (${CMAKE_ANDROID_ARCH_ABI} STREQUAL "arm64-v8a")
@@ -38,10 +33,10 @@ if (${CMAKE_ANDROID_ARCH_ABI} STREQUAL "arm64-v8a")
             PLATFORM_DIFF_CODE
 
             # And64InlineHook
-            inline64/And64InlineHook.cpp
+            src/main/inline64/And64InlineHook.cpp
 
             # Unwind-64
-            unwind64/backtrace_64.cpp
+            src/main/unwind64/backtrace_64.cpp
     )
 else()
     SET(
@@ -49,15 +44,15 @@ else()
             PLATFORM_DIFF_CODE
 
             # Android-Inline-Hook
-            inline32/relocate.c
-            inline32/inlineHook.c
+            src/main/inline32/relocate.c
+            src/main/inline32/inlineHook.c
 
             # Unwind-32
-            unwind32/backtrace.c
-            unwind32/map_info.c
-            unwind32/backtrace-arm.c
-            unwind32/ptrace.c
-            unwind32/backtrace-helper.c
+            src/main/unwind32/backtrace.c
+            src/main/unwind32/map_info.c
+            src/main/unwind32/backtrace-arm.c
+            src/main/unwind32/ptrace.c
+            src/main/unwind32/backtrace-helper.c
     )
 endif()
 
@@ -73,24 +68,24 @@ add_library(
         ${PLATFORM_DIFF_CODE}
 
         # xDL
-        xDL/xdl.c
-        xDL/xdl_iterate.c
-        xDL/xdl_lzma.c
-        xDL/xdl_util.c
+        src/main/xDL/xdl.c
+        src/main/xDL/xdl_iterate.c
+        src/main/xDL/xdl_lzma.c
+        src/main/xDL/xdl_util.c
 
         # xHook
-        xHook/xh_core.c
-        xHook/xh_elf.c
-        xHook/xh_log.c
-        xHook/xh_util.c
+        src/main/xHook/xh_core.c
+        src/main/xHook/xh_elf.c
+        src/main/xHook/xh_log.c
+        src/main/xHook/xh_util.c
 
-        AllocPool.hpp
-        Cache.h
-        MemoryCache.cpp
-        MapData.cpp
-        Raphael.h
-        Raphael.cpp
-        xloader.cpp
+        src/main/cpp/AllocPool.hpp
+        src/main/cpp/Cache.h
+        src/main/cpp/MemoryCache.cpp
+        src/main/cpp/MapData.cpp
+        src/main/cpp/Raphael.h
+        src/main/cpp/Raphael.cpp
+        src/main/cpp/xloader.cpp
 )
 
 # Searches for a specified prebuilt library and stores the path as a
